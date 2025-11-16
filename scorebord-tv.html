@@ -1,242 +1,331 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Biljartscore TV v1.19</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Biljartscore TV v1.18</title>
 
 <style>
-body {
-  margin:0;
-  background:#0b1225;
-  color:white;
+:root{
+  --bg:#0f172a;
+  --dark:#0a0f1e;
+  --gray:#1e293b;
+  --muted:#94a3b8;
+  --blue:#3b82f6;
+  --greenActive:#14532d;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:var(--dark);
+  color:#fff;
   font-family:Arial,Helvetica,sans-serif;
   overflow:hidden;
 }
-
-.wrap {
+.tvwrap{
+  width:100vw;
+  height:100vh;
   padding:20px;
-  text-align:center;
-}
-
-.players {
   display:flex;
-  justify-content:space-between;
+  flex-direction:column;
   gap:20px;
 }
 
-.box {
+/* TOPBAR */
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:24px;
+  font-weight:900;
+}
+
+/* PLAYERS */
+.players{
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
   flex:1;
-  background:#0f172a;
-  border-radius:16px;
-  padding:30px 10px;
-  box-shadow:0 0 40px rgba(0,150,255,.3);
 }
-
-.name {
-  font-size:42px;
+.player{
+  flex:1;
+  background:#0d1529;
+  border-radius:20px;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  box-shadow:0 0 25px rgba(0,0,0,0.7);
+  transition:0.2s;
+}
+.player.active{
+  box-shadow:0 0 45px var(--greenActive);
+}
+.name{
+  font-size:34px;
   font-weight:900;
-  margin-bottom:15px;
+  margin-bottom:6px;
 }
-
-.circlewrap {
-  width:180px;
-  height:180px;
-  margin:0 auto 20px;
-  position:relative;
-}
-.circlewrap svg {
-  width:180px;
-  height:180px;
-}
-.circlewrap .count {
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  font-size:54px;
-  font-weight:900;
-}
-
-.bigscore {
-  font-size:80px;
-  font-weight:900;
-  margin:10px 0 20px;
-}
-
-.stats {
-  font-size:26px;
-  line-height:36px;
-  font-weight:700;
-}
-
-/* --- LAATSTE BEURTEN TABEL --- */
-.lastwrap {
-  margin:20px auto 0;
-  max-width:900px;
-}
-
-.lastwrap h2 {
-  font-size:32px;
+.club{
+  font-size:16px;
+  color:var(--muted);
   margin-bottom:12px;
 }
 
-table {
+/* DONUT */
+.donut{
+  width:170px;
+  height:170px;
+  border-radius:50%;
+  background:conic-gradient(var(--blue) calc(var(--pct,0)*1%), #020617 0);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:10px;
+}
+.donut-inner{
+  width:78%;
+  height:78%;
+  background:#000;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.total{
+  font-size:46px;
+  font-weight:900;
+}
+
+/* HUIDIGE BEURT */
+.turn{
+  font-size:64px;
+  font-weight:900;
+  background:#000;
+  border-radius:12px;
+  padding:10px 20px;
+  margin:10px 0;
+}
+
+/* STATS */
+.stats{
+  margin-top:6px;
+  text-align:center;
+  font-size:22px;
+  font-weight:700;
+}
+.stats div{ margin:4px 0; }
+
+/* LAATSTE 5 BEURTEN */
+.logwrap{
+  background:#0b1220;
+  border-radius:20px;
+  padding:12px 18px 18px;
+  box-shadow:0 0 20px rgba(0,0,0,0.6);
+}
+.logtitle{
+  font-size:24px;
+  font-weight:900;
+  margin-bottom:6px;
+}
+#lastTable{
   width:100%;
   border-collapse:collapse;
-  font-size:26px;
+  font-size:22px;
 }
-
-th, td {
-  padding:8px 0;
+#lastTable th,#lastTable td{
+  padding:4px 8px;
+  text-align:center;
 }
-
-th {
-  font-weight:900;
+#lastTable th{
   border-bottom:2px solid rgba(255,255,255,0.3);
 }
-
-td {
-  font-weight:700;
-  border-bottom:1px solid rgba(255,255,255,0.1);
+#lastTable td{
+  border-bottom:1px solid rgba(255,255,255,0.12);
 }
 
+/* POPUP */
+#popup{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:var(--blue);
+  color:#fff;
+  padding:24px 40px;
+  border-radius:18px;
+  font-size:36px;
+  font-weight:900;
+  box-shadow:0 0 30px rgba(0,0,0,0.7);
+  display:none;
+  z-index:999;
+}
 </style>
 </head>
-
 <body>
-<div class="wrap">
+<div class="tvwrap">
 
-  <div id="beurtHeader" style="font-size:32px; font-weight:900; margin-bottom:20px;">
-    Beurten: …
+  <div class="topbar">
+    <div>Biljartscore TV v1.18</div>
+    <div id="beurtenTop">Beurten: 0</div>
   </div>
 
   <div class="players">
-    <div class="box" id="p1box">
-      <div class="name" id="p1name"></div>
+    <div class="player" id="pA">
+      <div class="name" id="naamA"></div>
+      <div class="club" id="clubA"></div>
 
-      <div class="circlewrap">
-        <svg>
-          <circle cx="90" cy="90" r="80" stroke="#0a0f1c" stroke-width="20" fill="none" />
-          <circle id="p1arc" cx="90" cy="90" r="80" stroke="#3b82f6" stroke-width="20"
-                  fill="none" stroke-linecap="round"
-                  transform="rotate(-90 90 90)" stroke-dasharray="502" stroke-dashoffset="502" />
-        </svg>
-        <div class="count" id="p1car">0</div>
+      <div class="donut" id="donutA">
+        <div class="donut-inner">
+          <div class="total" id="totA">0</div>
+        </div>
       </div>
 
-      <div class="bigscore" id="p1lopend">0</div>
+      <div class="turn" id="turnA">0</div>
 
       <div class="stats">
-        HS: <span id="p1hs">0</span><br>
-        Moy: <span id="p1moy">0,000</span><br>
-        En nog <span id="p1rest">0</span> (<span id="p1perc">0%</span>)
+        <div id="hsA">HS: 0</div>
+        <div id="moyA">Moy: 0,000</div>
+        <div id="nogA">En nog 0 (0%)</div>
       </div>
     </div>
 
-    <div class="box" id="p2box">
-      <div class="name" id="p2name"></div>
+    <div class="player" id="pB">
+      <div class="name" id="naamB"></div>
+      <div class="club" id="clubB"></div>
 
-      <div class="circlewrap">
-        <svg>
-          <circle cx="90" cy="90" r="80" stroke="#0a0f1c" stroke-width="20" fill="none" />
-          <circle id="p2arc" cx="90" cy="90" r="80" stroke="#3b82f6" stroke-width="20"
-                  fill="none" stroke-linecap="round"
-                  transform="rotate(-90 90 90)" stroke-dasharray="502" stroke-dashoffset="502" />
-        </svg>
-        <div class="count" id="p2car">0</div>
+      <div class="donut" id="donutB">
+        <div class="donut-inner">
+          <div class="total" id="totB">0</div>
+        </div>
       </div>
 
-      <div class="bigscore" id="p2lopend">0</div>
+      <div class="turn" id="turnB">0</div>
 
       <div class="stats">
-        HS: <span id="p2hs">0</span><br>
-        Moy: <span id="p2moy">0,000</span><br>
-        En nog <span id="p2rest">0</span> (<span id="p2perc">0%</span>)
+        <div id="hsB">HS: 0</div>
+        <div id="moyB">Moy: 0,000</div>
+        <div id="nogB">En nog 0 (0%)</div>
       </div>
     </div>
   </div>
 
-  <!-- --- Nieuwe laatste 5 beurten tabel --- -->
-  <div class="lastwrap">
-    <h2>Laatste Beurten</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Beurt</th>
-          <th id="p1col">A</th>
-          <th id="p2col">B</th>
-        </tr>
-      </thead>
-      <tbody id="lastBody">
-      </tbody>
-    </table>
+  <div class="logwrap">
+    <div class="logtitle">Laatste beurten</div>
+    <table id="lastTable"></table>
   </div>
-
 </div>
 
+<div id="popup"></div>
+
 <script>
-function $(id){ return document.getElementById(id); }
+const SYNC_KEY = 'biljartscore_sync_v1_17';
+let lastT = 0;
 
-/* Ontvang data via BroadcastChannel (werkt in dezelfde browser / testomgeving) */
-const chan = new BroadcastChannel("BILJART_DATA");
+const naamA = document.getElementById('naamA');
+const naamB = document.getElementById('naamB');
+const clubA = document.getElementById('clubA');
+const clubB = document.getElementById('clubB');
+const donutA = document.getElementById('donutA');
+const donutB = document.getElementById('donutB');
+const totA = document.getElementById('totA');
+const totB = document.getElementById('totB');
+const turnA = document.getElementById('turnA');
+const turnB = document.getElementById('turnB');
+const hsA = document.getElementById('hsA');
+const hsB = document.getElementById('hsB');
+const moyA = document.getElementById('moyA');
+const moyB = document.getElementById('moyB');
+const nogA = document.getElementById('nogA');
+const nogB = document.getElementById('nogB');
+const pA = document.getElementById('pA');
+const pB = document.getElementById('pB');
+const beurtenTop = document.getElementById('beurtenTop');
+const lastTable = document.getElementById('lastTable');
+const popup = document.getElementById('popup');
 
-chan.onmessage = e => {
-  const d = e.data;
-  if(!d) return;
+function showPopup(text){
+  popup.textContent = text;
+  popup.style.display = 'block';
+  clearTimeout(showPopup._t);
+  showPopup._t = setTimeout(()=>popup.style.display='none',4000);
+}
 
-  /* header */
-  $("beurtHeader").innerText = "Beurten: " + d.beurt;
+function applyState(s){
+  if (!s || !s.A) return;
 
-  /* namen */
-  $("p1name").innerText = d.p1.naam;
-  $("p2name").innerText = d.p2.naam;
+  // 1 of 2 spelers
+  if (s.aantal === 1 || !s.B){
+    pB.style.display = 'none';
+  } else {
+    pB.style.display = 'flex';
+  }
 
-  /* cirkel */
-  const tot1 = d.p1.doel;
-  const tot2 = d.p2.doel;
+  // Speler A
+  naamA.textContent = s.A.naam;
+  clubA.textContent = s.toonClub === 'ja' && s.A.club ? s.A.club : '';
+  totA.textContent = s.A.totaal;
+  turnA.textContent = s.A.huidig;
+  hsA.textContent = 'HS: ' + s.A.hoogste;
+  moyA.textContent = 'Moy: ' + s.A.moy;
+  nogA.textContent = `En nog ${s.A.nog} (${s.A.remainingPct}%)`;
+  donutA.style.setProperty('--pct', s.A.madePct);
 
-  const dash = 502;
+  // Speler B (indien aanwezig)
+  if (s.aantal === 2 && s.B){
+    naamB.textContent = s.B.naam;
+    clubB.textContent = s.toonClub === 'ja' && s.B.club ? s.B.club : '';
+    totB.textContent = s.B.totaal;
+    turnB.textContent = s.B.huidig;
+    hsB.textContent = 'HS: ' + s.B.hoogste;
+    moyB.textContent = 'Moy: ' + s.B.moy;
+    nogB.textContent = `En nog ${s.B.nog} (${s.B.remainingPct}%)`;
+    donutB.style.setProperty('--pct', s.B.madePct);
+  }
 
-  $("p1arc").style.strokeDashoffset = dash - (dash * d.p1.car / tot1);
-  $("p2arc").style.strokeDashoffset = dash - (dash * d.p2.car / tot2);
+  // Actieve speler highlight
+  pA.classList.toggle('active', s.active === 'A');
+  pB.classList.toggle('active', s.active === 'B');
 
-  $("p1car").innerText = d.p1.car;
-  $("p2car").innerText = d.p2.car;
+  // Beurten
+  beurtenTop.textContent = 'Beurten: ' + (s.beurtA ?? 0);
 
-  /* lopend */
-  $("p1lopend").innerText = d.p1.lopend;
-  $("p2lopend").innerText = d.p2.lopend;
+  // Popup tekst (voorlaatste / laatste beurt)
+  if (s.overlayText){
+    showPopup(s.overlayText);
+  }
 
-  /* stats */
-  $("p1hs").innerText = d.p1.hs;
-  $("p2hs").innerText = d.p2.hs;
+  // Laatste 5 beurten tabel
+  const rows = s.log || [];
+  let html = '<tr><th>Beurt</th><th>' + s.A.naam + '</th>';
+  if (s.aantal === 2 && s.B){
+    html += '<th>' + s.B.naam + '</th>';
+  }
+  html += '</tr>';
 
-  $("p1moy").innerText = d.p1.moy;
-  $("p2moy").innerText = d.p2.moy;
-
-  $("p1rest").innerText = d.p1.rest;
-  $("p2rest").innerText = d.p2.rest;
-
-  $("p1perc").innerText = d.p1.perc;
-  $("p2perc").innerText = d.p2.perc;
-
-  /* laatste 5 beurten */
-  const tb = $("lastBody");
-  tb.innerHTML = "";
-
-  d.last.slice(-5).forEach(row => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${row.beurt}</td>
-      <td>${row.p1}</td>
-      <td>${row.p2}</td>
-    `;
-    tb.appendChild(tr);
+  rows.slice(-5).forEach(r=>{
+    html += '<tr><td>' + r.nr + '</td><td>' + (r.a ?? '') + '</td>';
+    if (s.aantal === 2 && s.B){
+      html += '<td>' + (r.b ?? '') + '</td>';
+    }
+    html += '</tr>';
   });
-};
 
+  lastTable.innerHTML = html;
+}
+
+// Poll elke 300ms de stand uit localStorage (werkt in tabs op dezelfde PC)
+setInterval(()=>{
+  try{
+    const raw = localStorage.getItem(SYNC_KEY);
+    if (!raw) return;
+    const msg = JSON.parse(raw);
+    if (!msg || !msg.state) return;
+    if (msg.t <= lastT) return;
+    lastT = msg.t;
+    applyState(msg.state);
+  }catch(e){}
+},300);
 </script>
-
 </body>
 </html>
