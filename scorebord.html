@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Biljartscore v1.17 – Scorebord</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="icon.png">
+
+<!-- No-cache -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+
+<style>
+:root{
+  --bg:#0f172a;
+  --dark:#111827;
+  --gray:#1e293b;
+  --muted:#94a3b8;
+  --green:#22c55e;
+  --greenActive:#14532d;
+  --red:#ef4444;
+  --blue:#3b82f6;
+  --yellow:#facc15;
+  --btnSmall:40px;
+  --btnTall:70px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:#fff;
+  font-family:Arial,Helvetica,sans-serif;
+  text-align:center;
+}
+header{
+  background:#fff;
+  color:#000;
+  font-weight:900;
+  font-size:20px;
+  padding:8px 10px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+header .spacer{flex:1}
+header .ver{font-size:12px;color:#111}
+header button{
+  background:var(--blue);
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  padding:6px 10px;
+  cursor:pointer;
+  font-size:13px;
+}
+header button:disabled{opacity:.4;cursor:not-allowed}
+
+main{
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  gap:12px;
+  flex-wrap:nowrap;
+  margin:10px auto;
+  max-width:980px;
+  overflow:hidden;
+}
+.oneplayer main{justify-content:center}
+.player{
+  background:var(--dark);
+  border-radius:14px;
+  padding:10px;
+  width:360px;
+  box-shadow:0 6px 16px rgba(0,0,0,.45);
+  transition:all .3s ease;
+}
+.player.active{
+  background:var(--greenActive);
+  box-shadow:0 0 18px 5px rgba(34,197,94,.7);
+}
+.name{
+  font-size:22px;
+  font-weight:900;
+}
+.club{
+  color:var(--muted);
+  font-size:12px;
+  margin-top:-2px;
+  margin-bottom:6px;
+}
+.to-make{
+  background:var(--gray);
+  color:#fff;
+  border-radius:8px;
+  padding:6px;
+  font-size:14px;
+  margin:6px 0;
+}
+
+/* Donut rond totaalscore */
+.donut{
+  width:120px;
+  height:120px;
+  margin:8px auto;
+  border-radius:50%;
+  background:
+    conic-gradient(var(--blue) calc(var(--pct,0)*1%), #020617 0);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 0 20px rgba(0,0,0,0.8);
+}
+.donut-inner{
+  width:84%;
+  height:84%;
+  border-radius:50%;
+  background:#000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.total-made{
+  font-size:32px;
+  font-weight:900;
+  margin:0;
+}
+
+.turn-now{
+  background:#000;
+  color:#fff;
+  font-size:64px;
+  font-weight:900;
+  border-radius:10px;
+  margin:8px 0;
+  padding:8px;
+}
+.hs{
+  color:var(--muted);
+  font-size:13px;
+  margin-top:4px;
+}
+.moy{
+  color:#e5e7eb;
+  font-size:16px;
+  font-weight:700;
+  margin-top:2px;
+}
+
+.middle{
+  margin:8px 0;
+  font-size:18px;
+  font-weight:700;
+}
+#beurtenText{
+  font-size:20px;
+  font-weight:900;
+}
+.progress-row{
+  margin-top:4px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+}
+#nogText{
+  font-size:18px;
+}
+#pctText{
+  font-size:16px;
+  color:#60a5fa;
+  font-weight:900;
+}
+
+/* Controls */
+.controls{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:repeat(3,auto);
+  gap:8px;
+  justify-content:center;
+  align-items:center;
+  margin:16px auto 12px;
+  max-width:420px;
+}
+.ctrl{
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  color:#fff;
+  font-weight:900;
+  box-shadow:0 4px 10px rgba(0,0,0,.5);
+  transition:transform .15s;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  width:100%;
+}
+.ctrl:active{transform:scale(.97)}
+.minus{
+  background:var(--red);
+  font-size:28px;
+  height:var(--btnSmall);
+  grid-column:1;
+  grid-row:1;
+}
+.back{
+  background:var(--yellow);
+  color:#000;
+  font-size:13px;
+  height:var(--btnSmall);
+  grid-column:2;
+  grid-row:1;
+}
+.plus{
+  background:var(--green);
+  font-size:34px;
+  height:var(--btnTall);
+  grid-column:1;
+  grid-row:2;
+}
+.note{
+  background:var(--blue);
+  color:#fff;
+  font-size:34px;
+  height:var(--btnTall);
+  grid-column:2;
+  grid-row:2;
+}
+.settings-wrap{
+  grid-column:1 / span 2;
+  grid-row:3;
+  display:flex;
+  justify-content:center;
+}
+.settings{
+  background:var(--gray);
+  font-size:14px;
+  padding:8px 12px;
+  border:none;
+  border-radius:10px;
+  color:#fff;
+  cursor:pointer;
+  width:100%;
+}
+
+/* Mini log */
+table{
+  width:92%;
+  max-width:700px;
+  margin:12px auto;
+  border-collapse:collapse;
+  background:var(--dark);
+  border-radius:10px;
+  overflow:hidden;
+  box-shadow:0 4px 12px rgba(0,0,0,.4);
+}
+th,td{
+  padding:6px;
+  text-align:center;
+  border-bottom:1px solid var(--gray);
+  font-size:14px;
+}
+th{background:var(--blue)}
+tr.hl{background:var(--greenActive)}
+
+.export{
+  background:transparent;
+  border:1px solid var(--blue);
+  border-radius:8px;
+  color:#fff;
+  padding:6px 10px;
+  margin-bottom:12px;
+  cursor:pointer;
+  font-size:14px;
+}
+
+/* Overlay einde partij */
+#overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.7);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:50;
+}
+#overlay.show{display:flex}
+.overlay-card{
+  background:#0b1222;
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 0 40px rgba(0,0,0,.7);
+  max-width:720px;
+}
+.overlay-card h2{
+  margin-top:0;
+  font-size:26px;
+}
+.overlay-footer{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  margin-top:12px;
+  flex-wrap:wrap;
+}
+.overlay-footer button{
+  background:#1e293b;
+  color:#fff;
+  border:none;
+  border-radius:10px;
+  padding:8px 14px;
+  cursor:pointer;
+}
+
+/* Popups / spraak */
+#nogXPopup{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:#3b82f6;
+  color:#fff;
+  padding:28px 44px;
+  border-radius:18px;
+  font-size:32px;
+  font-weight:900;
+  text-shadow:0 0 18px rgba(0,0,0,.6);
+  display:none;
+  z-index:999;
+  box-shadow:0 0 26px rgba(0,0,0,.6);
+}
+#speechBtn{
+  position:fixed;
+  top:10px;
+  right:10px;
+  z-index:9999;
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  background:#374151;
+  border:2px solid #60a5fa;
+  color:#fff;
+  font-size:24px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 0 10px rgba(0,0,0,.4);
+  transition:all .25s;
+}
+#speechBtn.active{
+  background:#3b82f6;
+  box-shadow:0 0 14px 3px rgba(59,130,246,.7);
+}
+#speechBtn:active{transform:scale(.93)}
+#listenStatus{
+  font-size:12px;
+  color:#9ca3af;
+  margin:6px 0 10px;
+}
+#voiceFeedback{
+  position:fixed;
+  bottom:16px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#2563eb;
+  color:#fff;
+  padding:6px 16px;
+  border-radius:10px;
+  font-size:16px;
+  font-weight:700;
+  box-shadow:0 0 15px rgba(0,0,0,.6);
+  display:none;
+  z-index:999;
+}
+
+/* Responsive */
+@media (max-width:900px){
+  .player{width:44vw;min-width:44vw}
+  .turn-now{font-size:52px}
+}
+@media (max-width:600px){
+  .player{
+    width:46vw;
+    min-width:46vw;
+    padding:8px;
+  }
+  .name{font-size:18px}
+  .total-made{font-size:26px}
+  .turn-now{
+    font-size:46px;
+    padding:6px;
+  }
+  :root{
+    --btnSmall:36px;
+    --btnTall:60px;
+  }
+  #nogXPopup{
+    font-size:28px;
+    padding:24px 36px;
+  }
+  #voiceFeedback{font-size:14px}
+}
+</style>
+</head>
+<body>
+<header>
+  <span>Biljartscore</span>
+  <div class="spacer"></div>
+  <div class="ver">v1.17 (bediening)</div>
+  <button id="wisselBtn" onclick="wisselSpelerHandmatig()">↔ Wisselen</button>
+</header>
+
+<button id="speechBtn" title="Spraak aan/uit">🎤</button>
+
+<main id="main">
+  <div class="player" id="spA">
+    <div class="name" id="naamA"></div>
+    <div class="club" id="clubA"></div>
+    <div class="to-make" id="teMakenA"></div>
+
+    <div class="donut" id="donutA">
+      <div class="donut-inner">
+        <div class="total-made" id="totaalA"></div>
+      </div>
+    </div>
+
+    <div class="turn-now" id="turnA">0</div>
+    <div class="hs" id="hsA">HS: 0</div>
+    <div class="moy" id="moyA">Moy: 0,000</div>
+  </div>
+
+  <div class="player" id="spB">
+    <div class="name" id="naamB"></div>
+    <div class="club" id="clubB"></div>
+    <div class="to-make" id="teMakenB"></div>
+
+    <div class="donut" id="donutB">
+      <div class="donut-inner">
+        <div class="total-made" id="totaalB"></div>
+      </div>
+    </div>
+
+    <div class="turn-now" id="turnB">0</div>
+    <div class="hs" id="hsB">HS: 0</div>
+    <div class="moy" id="moyB">Moy: 0,000</div>
+  </div>
+</main>
+
+<div class="middle">
+  <div id="beurtenText">Beurten: 0</div>
+  <div class="progress-row">
+    <div id="nogText">En nog 0</div>
+    <div id="pctText">0%</div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="ctrl minus" onclick="punt(-1)">➖</button>
+  <button class="ctrl back"  onclick="vorigeBeurt()">🔙 Terug</button>
+  <button class="ctrl plus"  onclick="punt(1)">➕</button>
+  <button class="ctrl note"  onclick="noteer()">NOTEER</button>
+  <div class="settings-wrap">
+    <button class="settings" onclick="naarInstellingen()">⬅️ Instellingen</button>
+  </div>
+</div>
+
+<table id="miniLog"></table>
+<div id="listenStatus"></div>
+<button class="export" onclick="exportCSV()">📤 Exporteer log (CSV)</button>
+
+<div id="overlay">
+  <div class="overlay-card">
+    <h2>🏁 Partij afgelopen</h2>
+    <table id="resultTable"></table>
+    <div class="overlay-footer">
+      <button onclick="exportCSV(true)">📤 Exporteer CSV</button>
+      <button onclick="naarInstellingen()">↩️ Terug naar instellingen</button>
+    </div>
+  </div>
+</div>
+
+<div id="nogXPopup"></div>
+<div id="voiceFeedback"></div>
+
+<script>
+/* ========== INIT FROM SETTINGS ========== */
+const data = JSON.parse(localStorage.getItem('biljart_instellingen_pc')) || {
+  aantal: 2, spelsoort: 'driebanden',
+  speler1: {naam:'Speler A', doel:25, club:''},
+  speler2: {naam:'Speler B', doel:25, club:''},
+  toonClub: 'ja', maxBeurten: 25
+};
+const maxBeurten = Number(data.maxBeurten) || 25;
+document.body.classList.toggle('oneplayer', data.aantal === 1);
+
+const A = {
+  naam: data.speler1.naam,
+  doel: data.speler1.doel,
+  club: data.speler1.club,
+  totaal: 0,
+  huidig: 0,
+  hoogste: 0,
+  aanBeurt: true,
+  uit: false
+};
+const B = {
+  naam: data.speler2.naam,
+  doel: data.speler2.doel,
+  club: data.speler2.club,
+  totaal: 0,
+  huidig: 0,
+  hoogste: 0,
+  aanBeurt: (data.aantal===2 ? false : false),
+  uit: false
+};
+
+if (data.aantal === 1) {
+  document.getElementById('spB').style.display = 'none';
+  document.getElementById('wisselBtn').disabled = true;
+}
+
+/* GLOBAL STATE */
+let beurtA = 0;                // aantal beurten speler A
+let partijKlaar = false;
+let logRows = [];              // {nr, a, b}
+let currentRow = {nr:1, a:null, b:null};
+let eersteBeurt = true;
+let lastPopupText = null;
+let firstOut = null;           // eerste die uit is
+let laatsteBeurtVoor = null;   // wie nabeurt moet krijgen
+
+const SYNC_KEY = 'biljartscore_sync_v1_17';
+
+const fmt3 = n => (n??0).toLocaleString('nl-NL',{minimumFractionDigits:3,maximumFractionDigits:3});
+
+/* HELPERS */
+function countInnings(p){
+  let c = 0;
+  for(const r of logRows){
+    if (p===A && r.a!=null) c++;
+    if (p===B && r.b!=null) c++;
+  }
+  if (p===A && currentRow.a!=null) c++;
+  if (p===B && currentRow.b!=null) c++;
+  return c;
+}
+function calcMoy(p){
+  const inn = countInnings(p);
+  return inn>0 ? p.totaal/inn : 0;
+}
+
+/* percentage gemaakt (voor donut) */
+function madePct(p){
+  const done = p.totaal + p.huidig;
+  if (!p.doel || p.doel<=0) return 0;
+  return Math.max(0, Math.min(100, Math.round((done/p.doel)*100)));
+}
+
+/* percentage NOG TE MAKEN (voor tekst) */
+function remainingPct(p){
+  return Math.max(0, Math.min(100, 100 - madePct(p)));
+}
+
+/* SYNC STATE → TV */
+function getStateSnapshot(){
+  const active = A.aanBeurt ? 'A' : 'B';
+  const nogA = Math.max(0, A.doel - (A.totaal + A.huidig));
+  const nogB = data.aantal===2 ? Math.max(0, B.doel - (B.totaal + B.huidig)) : null;
+  const allLog = [...logRows];
+  if (currentRow.a!=null || currentRow.b!=null) allLog.push(currentRow);
+  const logForTv = allLog.slice(-20);
+
+  const innA = countInnings(A);
+  const innB = data.aantal===2 ? countInnings(B) : 0;
+
+  return {
+    versie:'1.17',
+    aantal:data.aantal,
+    toonClub:data.toonClub,
+    maxBeurten,
+    beurtA,
+    partijKlaar,
+    active,
+    A:{
+      naam:A.naam,
+      club:A.club,
+      doel:A.doel,
+      totaal:A.totaal,
+      huidig:A.huidig,
+      hoogste:A.hoogste,
+      moy:fmt3(calcMoy(A)),
+      nog:nogA,
+      madePct:madePct(A),
+      remainingPct:remainingPct(A),
+      beurten:innA
+    },
+    B:data.aantal===2 ? {
+      naam:B.naam,
+      club:B.club,
+      doel:B.doel,
+      totaal:B.totaal,
+      huidig:B.huidig,
+      hoogste:B.hoogste,
+      moy:fmt3(calcMoy(B)),
+      nog:nogB,
+      madePct:madePct(B),
+      remainingPct:remainingPct(B),
+      beurten:innB
+    } : null,
+    log:logForTv,
+    overlayText:lastPopupText
+  };
+}
+function syncState(){
+  try{
+    localStorage.setItem(SYNC_KEY,
+      JSON.stringify({t:Date.now(), state:getStateSnapshot()}));
+  }catch(e){}
+}
+
+/* POPUPS */
+function showPopup(text){
+  lastPopupText = text;
+  const el = document.getElementById('nogXPopup');
+  el.textContent = text;
+  el.style.display = 'block';
+  syncState();
+  clearTimeout(showPopup._t);
+  showPopup._t = setTimeout(()=>{
+    el.style.display='none';
+    lastPopupText=null;
+    syncState();
+  },4000);
+}
+function checkNogX(p){
+  const nog = p.doel - (p.totaal + p.huidig);
+  const lim = (data.spelsoort === 'driebanden') ? 3 : 5;
+  if (nog>0 && nog<=lim) showPopup(`Nog ${nog}!`);
+}
+
+/* RENDER MINI LOG */
+function renderLog(){
+  const rows = [...logRows];
+  if (currentRow.a!=null || currentRow.b!=null) rows.push(currentRow);
+  let html = `<tr><th>Beurt</th><th>${A.naam}</th>${data.aantal===2?`<th>${B.naam}</th>`:''}</tr>`;
+  rows.slice(-5).forEach((r,i)=>{
+    const last = (i===rows.length-1);
+    html += `<tr${last?' class="hl"':''}><td>${r.nr}</td><td>${r.a??''}</td>${data.aantal===2?`<td>${r.b??''}</td>`:''}</tr>`;
+  });
+  miniLog.innerHTML = html;
+}
+
+/* DONUTS */
+function updateDonuts(){
+  const dA = document.getElementById('donutA');
+  const dB = document.getElementById('donutB');
+  if (dA) dA.style.setProperty('--pct', madePct(A));       // donut = gemaakt %
+  if (data.aantal===2 && dB) dB.style.setProperty('--pct', madePct(B));
+}
+
+/* RENDER UI */
+function render(){
+  naamA.textContent = A.naam;
+  naamB.textContent = B.naam;
+  clubA.textContent = (data.toonClub==='ja' && A.club)?A.club:'';
+  clubB.textContent = (data.toonClub==='ja' && B.club)?B.club:'';
+  teMakenA.textContent = `Te maken: ${A.doel}`;
+  teMakenB.textContent = `Te maken: ${B.doel}`;
+  totaalA.textContent = A.totaal;
+  totaalB.textContent = B.totaal;
+  turnA.textContent = A.huidig;
+  turnB.textContent = B.huidig;
+  hsA.textContent = `HS: ${A.hoogste}`;
+  hsB.textContent = `HS: ${B.hoogste}`;
+  moyA.textContent = `Moy: ${fmt3(calcMoy(A))}`;
+  moyB.textContent = `Moy: ${fmt3(calcMoy(B))}`;
+
+  spA.classList.toggle('active', A.aanBeurt);
+  spB.classList.toggle('active', B.aanBeurt && data.aantal===2);
+
+  beurtenText.textContent = `Beurten: ${beurtA}`;
+  const act = A.aanBeurt ? A : B;
+  const nogAct = Math.max(0, act.doel - (act.totaal + act.huidig));
+  nogText.textContent = `En nog ${nogAct}`;
+  pctText.textContent = remainingPct(act) + '%'; // NOG TE MAKEN %
+
+  updateDonuts();
+  renderLog();
+
+  if (partijKlaar){
+    document.querySelectorAll('.ctrl').forEach(b=>b.disabled=true);
+    showOverlay();
+    stopRecognition();
+  }
+
+  syncState();
+}
+
+/* SCORE LOGICA */
+function punt(x){
+  if (partijKlaar) return;
+  const p = A.aanBeurt ? A : B;
+  if (p.uit) return;
+  if (x<0 && p.huidig===0) return;
+
+  const rest = p.doel - p.totaal;
+  p.huidig = Math.min(rest, Math.max(0, p.huidig + x));
+  render();
+  if (x>0) checkNogX(p);
+}
+
+function noteer(){
+  if (partijKlaar) return;
+
+  const p = A.aanBeurt ? A : B;
+  if (p.uit) return;
+
+  const score = p.huidig;
+  const wasA = (p===A);
+
+  p.huidig = 0;
+  p.totaal += score;
+  if (score > p.hoogste) p.hoogste = score;
+
+  /* 1 speler */
+  if (data.aantal === 1){
+    currentRow.a = (currentRow.a ?? 0) + score;
+    beurtA++;
+
+    if (A.totaal >= A.doel) A.uit = true;
+
+    logRows.push(currentRow);
+
+    const upcoming = beurtA + 1;
+    if (!partijKlaar){
+      if (upcoming === maxBeurten - 1){
+        showPopup('Voorlaatste beurt – grijp je kans!');
+      } else if (upcoming === maxBeurten){
+        showPopup('Laatste beurt – alles of niets!');
+      }
+    }
+
+    currentRow = {nr:beurtA+1, a:null, b:null};
+
+    if (A.totaal >= A.doel || beurtA >= maxBeurten){
+      partijKlaar = true;
+    }
+
+    render();
+    return;
+  }
+
+  /* ===== 2 SPELERS – met nabeurt ===== */
+
+  // markeer uit
+  if (p.totaal >= p.doel && !p.uit){
+    p.uit = true;
+    if (!firstOut){
+      firstOut = p;
+      laatsteBeurtVoor = (p===A ? B : A); // tegenstander nabeurt
+    }
+  }
+
+  if (wasA){
+    // A noteert → beurt telt
+    currentRow.a = (currentRow.a ?? 0) + score;
+    beurtA++;
+
+    if (!partijKlaar){
+      A.aanBeurt = false;
+      B.aanBeurt = true;
+      if (eersteBeurt){
+        eersteBeurt=false;
+        wisselBtn.disabled = true;
+      }
+    }
+  } else {
+    // B noteert → beurt sluiten
+    currentRow.b = (currentRow.b ?? 0) + score;
+    logRows.push(currentRow);
+
+    if (!partijKlaar){
+      // nabeurt: degene die "laatsteBeurtVoor" is, doet nu zijn laatste beurt
+      if (laatsteBeurtVoor && p === laatsteBeurtVoor){
+        partijKlaar = true;
+      }
+
+      // beide uit → klaar
+      if (!partijKlaar && A.uit && B.uit){
+        partijKlaar = true;
+      }
+
+      // max beurten: A heeft maxBeurten, B doet nabeurt → klaar
+      if (!partijKlaar && beurtA >= maxBeurten){
+        partijKlaar = true;
+      }
+
+      if (!partijKlaar){
+        const upcoming = beurtA + 1;
+        if (upcoming === maxBeurten - 1){
+          showPopup('Voorlaatste beurt – grijp je kans!');
+        } else if (upcoming === maxBeurten){
+          showPopup('Laatste beurt – alles of niets!');
+        }
+
+        currentRow = {nr:beurtA+1, a:null, b:null};
+        A.aanBeurt = true;
+        B.aanBeurt = false;
+      }
+    }
+  }
+
+  render();
+}
+
+/* VORIGE BEURT / UNDO */
+function vorigeBeurt(){
+  if (partijKlaar){
+    alert("Partij is al afgelopen.");
+    return;
+  }
+
+  if (data.aantal === 1){
+    if (currentRow.a != null){
+      A.totaal -= currentRow.a;
+      if (A.totaal < 0) A.totaal = 0;
+      currentRow.a = null;
+      beurtA = Math.max(0, beurtA-1);
+      currentRow.nr = beurtA+1;
+      A.uit = false;
+      render();
+      return;
+    }
+    if (logRows.length > 0){
+      const last = logRows.pop();
+      A.totaal -= (last.a || 0);
+      if (A.totaal<0) A.totaal=0;
+      beurtA = Math.max(0, beurtA-1);
+      currentRow = {nr:beurtA+1, a:null, b:null};
+      A.uit = false;
+      render();
+      return;
+    }
+    alert("Geen vorige beurt om te verwijderen.");
+    return;
+  }
+
+  /* 2 spelers */
+
+  // Case 1: B is aan de beurt, A heeft al gespeeld
+  if (B.aanBeurt && currentRow.a!=null && currentRow.b==null){
+    A.totaal -= currentRow.a;
+    if (A.totaal<0) A.totaal=0;
+    currentRow.a = null;
+    beurtA = Math.max(0, beurtA-1);
+    currentRow.nr = beurtA+1;
+    A.aanBeurt = true;
+    B.aanBeurt = false;
+    A.uit = false;
+    render();
+    return;
+  }
+
+  // Case 2: A is aan de beurt, huidige row leeg, laatste actie was B-noteer
+  if (A.aanBeurt && currentRow.a==null && currentRow.b==null && logRows.length>0){
+    const last = logRows.pop();
+    A.totaal -= (last.a || 0);
+    if (A.totaal<0) A.totaal=0;
+    B.totaal -= (last.b || 0);
+    if (B.totaal<0) B.totaal=0;
+
+    beurtA = Math.max(0, beurtA-1);
+
+    currentRow = {nr:last.nr, a:last.a ?? null, b:null};
+    A.aanBeurt = false;
+    B.aanBeurt = true;
+    A.uit = false;
+    B.uit = false;
+    render();
+    return;
+  }
+
+  alert("Geen vorige beurt om te verwijderen.");
+}
+
+/* SUMMARY / OVERLAY */
+function buildSummary(){
+  const innA = countInnings(A);
+  const innB = (data.aantal===2 ? countInnings(B):0);
+  const moyA = fmt3(innA>0 ? A.totaal/innA : 0);
+  const moyB = data.aantal===2 ? fmt3(innB>0 ? B.totaal/innB : 0) : '';
+  let winA=false,winB=false,draw=false;
+  if (data.aantal===2){
+    if (A.totaal === B.totaal) draw=true;
+    else if (A.totaal>B.totaal) winA=true;
+    else winB=true;
+  }
+  return {moyA,moyB,winA,winB,draw,beurtenA:innA,beurtenB:innB};
+}
+function showOverlay(){
+  const s = buildSummary();
+  let html = `<tr><th></th><th>${A.naam}</th>${data.aantal===2?`<th>${B.naam}</th>`:''}</tr>`;
+  if (data.aantal===2){
+    html += `<tr><td>Gewonnen</td><td>${s.draw?'Gelijkspel':(s.winA?'✅':'')}</td><td>${s.draw?'Gelijkspel':(s.winB?'✅':'')}</td></tr>`;
+  }
+  html += `<tr><td>Moyenne</td><td>${s.moyA}</td>${data.aantal===2?`<td>${s.moyB}</td>`:''}</tr>
+           <tr><td>HS</td><td>${A.hoogste}</td>${data.aantal===2?`<td>${B.hoogste}</td>`:''}</tr>
+           <tr><td>Beurten</td><td>${s.beurtenA}</td>${data.aantal===2?`<td>${s.beurtenB}</td>`:''}</tr>`;
+  resultTable.innerHTML = html;
+  overlay.classList.add('show');
+}
+
+/* NAV */
+function wisselSpelerHandmatig(){
+  if (data.aantal !== 2) return;
+  if (!eersteBeurt) return;
+  [A.naam,B.naam]   = [B.naam,A.naam];
+  [A.doel,B.doel]   = [B.doel,A.doel];
+  [A.club,B.club]   = [B.club,A.club];
+  render();
+}
+function naarInstellingen(){
+  const base = location.origin + location.pathname.replace(/[^/]*$/,'');
+  window.location.href = base + 'index.html?v=' + Date.now();
+}
+
+/* AUDIO + SPRAAK */
+function playPling(){
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type='sine';
+    osc.frequency.value=880;
+    gain.gain.setValueAtTime(0.18,ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.25);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime+0.25);
+  }catch(e){}
+}
+
+const listenStatusEl = document.getElementById('listenStatus');
+const feedbackEl = document.getElementById('voiceFeedback');
+function setListeningUI(on){
+  const btn=document.getElementById('speechBtn');
+  btn.classList.toggle('active',on);
+  listenStatusEl.textContent = on ? '🎤 Luistert…' : '';
+}
+function showFeedback(msg){
+  feedbackEl.textContent = msg;
+  feedbackEl.style.display='block';
+  clearTimeout(showFeedback._t);
+  showFeedback._t=setTimeout(()=>feedbackEl.style.display='none',2000);
+}
+
+let recognition=null, recognizing=false;
+function startRecognition(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR){ alert("Spraakherkenning niet ondersteund op dit toestel."); return; }
+  recognition = new SR();
+  recognition.lang='nl-NL';
+  recognition.continuous=true;
+  recognition.interimResults=false;
+
+  recognition.onresult = (e)=>{
+    const res = e.results[e.results.length-1];
+    if (!res || !res[0]) return;
+    const raw = (res[0].transcript||'').trim();
+    if (!raw) return;
+    if (handleVoiceCommand(raw)) render();
+  };
+  recognition.onend = ()=>{
+    if (recognizing && !partijKlaar){
+      try{ recognition.start(); }catch(e){}
+    } else {
+      recognizing=false;
+      setListeningUI(false);
+    }
+  };
+
+  try{
+    recognition.start();
+    recognizing=true;
+    setListeningUI(true);
+  }catch(e){}
+}
+function stopRecognition(){
+  try{
+    if (recognition){
+      recognition.onend=null;
+      recognition.stop();
+    }
+  }catch(e){}
+  recognizing=false;
+  setListeningUI(false);
+}
+document.getElementById('speechBtn').addEventListener('click',()=>{
+  if (recognizing) stopRecognition(); else startRecognition();
+});
+
+const wordToNum = {
+  'één':1,'een':1,'en':1,'1':1,
+  'twee':2,'2':2,
+  'drie':3,'3':3,
+  'vier':4,'4':4,
+  'vijf':5,'5':5,
+  'zes':6,'6':6,
+  'zeven':7,'7':7,
+  'acht':8,'8':8,
+  'negen':9,'9':9,
+  'tien':10,'10':10,
+  'elf':11,'11':11,
+  'twaalf':12,'12':12,
+  'dertien':13,'13':13,
+  'veertien':14,'14':14,
+  'vijftien':15,'15':15,
+  'zestien':16,'16':16,
+  'zeventien':17,'17':17,
+  'achttien':18,'18':18,
+  'negentien':19,'19':19,
+  'twintig':20,'20':20
+};
+function normalize(str){
+  return str.toLowerCase()
+    .replace(/\s+/g,' ')
+    .replace(/\bplas\b/g,'plus')
+    .replace(/\been\b/g,'één');
+}
+function parseNumberToken(tok){
+  tok = tok.trim();
+  if (wordToNum[tok]!==undefined) return wordToNum[tok];
+  if (/^\d+$/.test(tok)) return parseInt(tok,10);
+  return NaN;
+}
+function handleVoiceCommand(raw){
+  const cmd = normalize(raw).trim();
+  if (cmd.includes('plus') || cmd.startsWith('+')){
+    const parts = cmd.split(' ');
+    let n=NaN;
+    for (let i=0;i<parts.length;i++){
+      if (parts[i]==='plus' || parts[i]==='+'){
+        const tok = parts[i+1]||'';
+        n = parseNumberToken(tok);
+        break;
+      }
+    }
+    if (!isNaN(n) && n>0 && n<=20){
+      for (let i=0;i<n;i++) punt(1);
+      playPling();
+      showFeedback(`Plus ${n} herkend`);
+      return true;
+    }
+  }
+  if (cmd.includes('noteer')){
+    noteer();
+    playPling();
+    showFeedback('Noteer herkend');
+    return true;
+  }
+  if (cmd.includes('terug')){
+    vorigeBeurt();
+    playPling();
+    showFeedback('Terug herkend');
+    return true;
+  }
+  if (cmd.includes('instelling')){
+    playPling();
+    showFeedback('Instellingen herkend');
+    setTimeout(()=>naarInstellingen(),150);
+    return true;
+  }
+  return false;
+}
+
+/* CSV EXPORT */
+function exportCSV(includeSummary=false){
+  let lines = [];
+  lines.push(`Beurt;${A.naam}${data.aantal===2?`;${B.naam}`:''}`);
+  for(const r of logRows){
+    lines.push(`${r.nr};${r.a??""}${data.aantal===2?`;${r.b??""}`:''}`);
+  }
+  if (currentRow.a!=null || currentRow.b!=null){
+    lines.push(`${currentRow.nr};${currentRow.a??""}${data.aantal===2?`;${currentRow.b??""}`:''}`);
+  }
+  if (includeSummary || partijKlaar){
+    const s = buildSummary();
+    lines.push('');
+    lines.push('RESULTAAT');
+    if (data.aantal===2){
+      lines.push(`Speler;${A.naam};${B.naam}`);
+      lines.push(`Score;${A.totaal};${B.totaal}`);
+      lines.push(`Gewonnen;${s.winA?"JA":(s.draw?"GELIJK":"NEE")};${s.winB?"JA":(s.draw?"GELIJK":"NEE")}`);
+      lines.push(`Moyenne;${s.moyA};${s.moyB}`);
+      lines.push(`HS;${A.hoogste};${B.hoogste}`);
+      lines.push(`Beurten;${s.beurtenA};${s.beurtenB}`);
+    } else {
+      lines.push(`Speler;${A.naam}`);
+      lines.push(`Score;${A.totaal}`);
+      lines.push(`Moyenne;${s.moyA}`);
+      lines.push(`HS;${A.hoogste}`);
+      lines.push(`Beurten;${s.beurtenA}`);
+    }
+  }
+  const csv = lines.join('\n');
+  const blob = new Blob([csv],{type:"text/csv;charset=utf-8;"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `biljartscore_${A.naam}${data.aantal===2?`_vs_${B.naam}`:''}.csv`;
+  a.click();
+}
+
+/* START */
+render();
+if ('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>

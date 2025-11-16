@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Biljartscore v1.9 – Instellingen</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="icon.png">
+
+<style>
+body{
+  background:#0f172a;
+  color:#fff;
+  font-family:Arial,Helvetica,sans-serif;
+  text-align:center;
+  margin:0;
+  padding:20px;
+}
+h1{
+  font-size:28px;
+  margin-bottom:20px;
+}
+form{
+  max-width:520px;
+  margin:0 auto;
+  background:#111827;
+  padding:20px;
+  border-radius:14px;
+  box-shadow:0 0 20px rgba(0,0,0,.6);
+}
+label{
+  display:block;
+  margin-top:10px;
+  font-weight:700;
+  text-align:left;
+}
+input,select{
+  width:100%;
+  padding:10px;
+  margin-top:6px;
+  border:none;
+  border-radius:8px;
+  font-size:16px;
+}
+fieldset{
+  border:none;
+  margin-top:12px;
+  text-align:left;
+}
+legend{
+  font-weight:700;
+}
+.radiorow{
+  display:flex;
+  gap:16px;
+  align-items:center;
+  margin:6px 0;
+}
+.radiorow label{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:0;
+}
+button{
+  font-family:inherit;
+}
+button[type="submit"]{
+  margin-top:20px;
+  padding:12px 20px;
+  font-size:18px;
+  font-weight:900;
+  background:#3b82f6;
+  color:#fff;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  width:100%;
+}
+button[type="submit"]:active{
+  transform:scale(.97);
+}
+hr{
+  margin:15px 0;
+  border-color:#1e293b;
+}
+.hidden{
+  display:none;
+}
+.small{
+  font-size:12px;
+  color:#9ca3af;
+  margin-top:8px;
+}
+.ver{
+  font-size:12px;
+  color:#9ca3af;
+  margin:10px 0 0;
+}
+.exit-wrap{
+  max-width:520px;
+  margin:16px auto 0;
+}
+.exit-btn{
+  width:100%;
+  padding:10px 16px;
+  font-size:16px;
+  font-weight:700;
+  border-radius:10px;
+  border:1px solid #ef4444;
+  background:#1f2933;
+  color:#fecaca;
+  cursor:pointer;
+}
+.exit-btn:active{
+  transform:scale(.97);
+}
+</style>
+</head>
+<body>
+<h1>Biljartscore – Instellingen</h1>
+
+<form id="setupForm">
+  <fieldset>
+    <legend>Aantal spelers</legend>
+    <div class="radiorow">
+      <label><input type="radio" name="aantal" value="1" checked> 1 speler</label>
+      <label><input type="radio" name="aantal" value="2"> 2 spelers</label>
+    </div>
+  </fieldset>
+
+  <label>Naam speler 1 (starter)</label>
+  <input id="speler1" placeholder="Bijv. Rob" required />
+
+  <label>Te maken caramboles speler 1</label>
+  <input id="doel1" type="number" value="25" min="1" />
+
+  <label>Vereniging speler 1 (optioneel)</label>
+  <input id="club1" placeholder="Bijv. BC Maastricht" />
+
+  <div id="blok2" class="hidden">
+    <hr/>
+    <label>Naam speler 2</label>
+    <input id="speler2" placeholder="Bijv. René" />
+    <label>Te maken caramboles speler 2</label>
+    <input id="doel2" type="number" value="25" min="1" />
+    <label>Vereniging speler 2 (optioneel)</label>
+    <input id="club2" placeholder="Bijv. BC Roermond" />
+  </div>
+
+  <fieldset>
+    <legend>Spelsoort</legend>
+    <div class="radiorow">
+      <label><input type="radio" name="spelsoort" value="driebanden" checked> Driebanden</label>
+      <label><input type="radio" name="spelsoort" value="libre"> Libre</label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Vereniging tonen op scorebord?</legend>
+    <div class="radiorow">
+      <label><input type="radio" name="toonClub" value="ja" checked> Ja</label>
+      <label><input type="radio" name="toonClub" value="nee"> Nee</label>
+    </div>
+  </fieldset>
+
+  <label>Maximaal aantal beurten</label>
+  <input id="maxbeurten" type="number" value="25" min="1" />
+
+  <div class="small">v1.9 – Instellingen (biljartscore + max. beurten)</div>
+  <button type="submit">Start scorebord ▶️</button>
+</form>
+
+<div class="exit-wrap">
+  <button type="button" class="exit-btn" onclick="sluitApp()">❌ App afsluiten</button>
+</div>
+
+<script>
+const blok2 = document.getElementById('blok2');
+document.querySelectorAll('input[name="aantal"]').forEach(r=>{
+  r.addEventListener('change', ()=>{
+    const two = document.querySelector('input[name="aantal"]:checked').value === '2';
+    blok2.classList.toggle('hidden', !two);
+  });
+});
+
+document.getElementById('setupForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const aantal = +document.querySelector('input[name="aantal"]:checked').value;
+  const two = aantal === 2;
+  const data = {
+    aantal,
+    spelsoort: document.querySelector('input[name="spelsoort"]:checked').value,
+    speler1: { naam: speler1.value || 'Speler A', doel: +doel1.value || 25, club: club1.value || '' },
+    speler2: { naam: two ? (speler2.value || 'Speler B') : 'Speler B',
+               doel: two ? (+doel2.value || 25) : 25,
+               club: two ? (club2.value || '') : '' },
+    toonClub: document.querySelector('input[name="toonClub"]:checked').value,
+    maxBeurten: +maxbeurten.value || 25
+  };
+  localStorage.setItem('biljart_instellingen_pc', JSON.stringify(data));
+  window.location = 'scorebord.html?v=' + Date.now();
+});
+
+function sluitApp(){
+  const isStandalone =
+    (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+    window.navigator.standalone;
+
+  if (isStandalone) {
+    window.close();
+    setTimeout(()=>{
+      alert('Als de app niet is gesloten: sluit deze via de recente apps / taakbeheer.');
+    },400);
+  } else {
+    alert('Sluit deze pagina via het tabblad of door de browser te sluiten.');
+  }
+}
+
+// Service worker registreren
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
